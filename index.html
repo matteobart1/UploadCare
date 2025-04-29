@@ -8,24 +8,28 @@
   <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
 
   <script>
-    // 🔍 Leggi session_id da URL
+    // Leggi il session_id dall'URL
     function getQueryParam(name) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(name);
     }
 
-    const sessionId = getQueryParam('session_id');
+    const sessionId = getQueryParam('session_id') || 'unknown';
 
-    // 🔧 Configura Uploadcare
-    UPLOADCARE_PUBLIC_KEY = 'b50db034602961a73c98'; // <-- Sostituisci con la tua vera chiave pubblica
+    // Configura Uploadcare
+    UPLOADCARE_PUBLIC_KEY = 'b50db034602961a73c98'; // <-- Sostituisci con la tua vera chiave
     UPLOADCARE_LOCALE = 'en';
 
-    // ✅ Quando il widget si apre, imposta i metadata PRIMA dell'upload
     const widget = uploadcare.Widget('[role=uploadcare-uploader]');
-    widget.onDialogOpen(dialog => {
-      dialog.settings.metadata = {
-        session_id: sessionId || 'unknown'
-      };
+
+    // ⛔ Disattiva upload automatico
+    uploadcare.start = false;
+
+    // ✅ Appena l'utente seleziona un file
+    widget.onChange(file => {
+      file.setMetadata({ session_id: sessionId }).then(updatedFile => {
+        updatedFile.store(); // forza il salvataggio con metadata
+      });
     });
   </script>
 
@@ -43,13 +47,11 @@
 <body>
   <h2>Upload your product images</h2>
 
-  <!-- Uploadcare Widget Input -->
   <input
     type="hidden"
     role="uploadcare-uploader"
     data-multiple="true"
     data-tabs="file camera url"
-    data-metadata='{"session_id": ""}'
     data-public-key="b50db034602961a73c98"
     data-path-value="true"
   />
