@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Upload Your Product Images</title>
+  <title>Upload your images</title>
 
   <!-- Uploadcare Widget -->
   <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
 
   <script>
-    // 1. Read session_id from the URL
     function getQueryParam(name) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(name);
@@ -16,34 +15,32 @@
 
     const sessionId = getQueryParam('session_id');
 
-    // 2. Configure Uploadcare
-    UPLOADCARE_PUBLIC_KEY = 'b50db034602961a73c98'; // <-- replace with your Uploadcare Public Key
+    UPLOADCARE_PUBLIC_KEY = 'b50db034602961a73c98'; // <-- Inserisci qui la tua Public Key
     UPLOADCARE_LOCALE = 'en';
 
-    // 3. Initialize widget
     const widget = uploadcare.Widget('[role=uploadcare-uploader]');
 
-    // 4. Inject session_id into metadata before upload starts
-    widget.onDialogOpen(dialog => {
-      dialog.settings.metadata = {
-        session_id: sessionId
-      };
+    widget.onUploadComplete(info => {
+      // Dopo il caricamento, carica di nuovo il file, imposta i metadata e salva
+      uploadcare.fileFrom('uploaded', info.uuid).then(file => {
+        file.setMetadata({ session_id: sessionId }).then(updatedFile => {
+          updatedFile.store();
+        });
+      });
     });
   </script>
-
 </head>
 
 <body>
 
   <h2>Upload your product images</h2>
 
-  <!-- Uploadcare Widget Input -->
   <input
     type="hidden"
     role="uploadcare-uploader"
     data-multiple="true"
     data-tabs="file camera url"
-    data-metadata='{"session_id": ""}' 
+    data-metadata='{"session_id": ""}'
     data-public-key="b50db034602961a73c98"
     data-path-value="true"
   />
